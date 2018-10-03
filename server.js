@@ -33,7 +33,7 @@ app.get('/shopping-list', (req, res) => {
 
 app.post('/shopping-list', jsonParser, (req, res) => {
   // ensure `name` and `budget` are in request body
-  const requiredFields = ['name', 'budget'];
+  const requiredFields = ['name', 'budget', 'quantity'];
   for (let i=0; i<requiredFields.length; i++) {
     const field = requiredFields[i];
     if (!(field in req.body)) {
@@ -43,7 +43,7 @@ app.post('/shopping-list', jsonParser, (req, res) => {
     }
   }
 
-  const item = ShoppingList.create(req.body.name, req.body.budget);
+  const item = ShoppingList.create(req.body.name, req.body.budget, req.body.quantity);
   res.status(201).json(item);
 });
 
@@ -51,6 +51,29 @@ app.post('/shopping-list', jsonParser, (req, res) => {
 app.get('/recipes', (req, res) => {
   res.json(Recipes.get());
 })
+
+app.post('/recipes', jsonParser, (req, res) => {
+ const requiredFields = ['name'];
+ const errorMessage = validateRequiredFields(requiredFields, req);
+ if (errorMessage) {
+   return res.status(400).send(errorMessage);
+ }
+ const item = Recipes.create(req.body.name);
+ res.status(201).json(item); 
+
+});
+
+function validateRequiredFields(requiredFields, req){
+  for (let i=0; i<requiredFields.length; i++) {
+    const field = requiredFields[i];
+    if (!(field in req.body)) {
+      const message = `Missing \`${field}\` in request body`
+      console.error(message);
+      return message;
+    }
+  }
+  return null;
+};
 
 app.listen(process.env.PORT || 8080, () => {
   console.log(`Your app is listening on port ${process.env.PORT || 8080}`);
